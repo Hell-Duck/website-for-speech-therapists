@@ -6,8 +6,15 @@ import models.RoomObject
 object GameData {
     // Предметы для игры "Найди слово" - Звук Р
     val soundRObjects = listOf(
-        RoomObject("fish", "Рыба", 50, 50, "🐟"),
-        RoomObject("crab", "Рак", 200, 50, "🦀"),
+        RoomObject(
+            id = "fish",
+            name = "Рыба",
+            x = 80,
+            y = 80,
+            emoji = null,
+            imagePath = "/static/images/fish.png"
+        ),
+        RoomObject("crab", "Рак", 200, 80, "🦀"),
         RoomObject("robot", "Робот", 350, 80, "🤖"),
         RoomObject("rose", "Роза", 500, 80, "🌹"),
         RoomObject("rocket", "Ракета", 650, 80, "🚀"),
@@ -30,11 +37,11 @@ object GameData {
 
     // Предметы без звука Р (для усложнения)
     val nonSoundRObjects = listOf(
-        RoomObject("lamp", "Лампа", 770, 150, "💡", false),
-        RoomObject("ball", "Мяч", 600, 520, "⚽", false),
-        RoomObject("book", "Книга", 670, 220, "📚", false),
-        RoomObject("car", "Машина", 40, 380, "🚗", false),
-        RoomObject("house", "Дом", 750, 380, "🏠", false)
+        RoomObject("lamp", "Лампа", 770, 150, "💡", null, false),
+        RoomObject("ball", "Мяч", 600, 520, "⚽", null, false),
+        RoomObject("book", "Книга", 670, 220, "📚", null, false),
+        RoomObject("car", "Машина", 40, 380, "🚗", null, false),
+        RoomObject("house", "Дом", 750, 380, "🏠", null, false)
     )
 
     // Упражнения для разных звуков

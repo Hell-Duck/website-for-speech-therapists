@@ -18,9 +18,20 @@ fun FlowContent.renderGameObject(obj: RoomObject, hasSound: Boolean) {
             attributes["class"] = if (hasSound) "room-object" else "room-object no-r-sound"
             attributes["onclick"] = "window.game.handleClick(this, '${escapedName}', '${obj.id}', $hasSound)"
 
-            div {
-                attributes["class"] = "object-emoji"
-                +obj.emoji
+            if (obj.imagePath != null) {
+                img {
+                    src = obj.imagePath
+                    alt = obj.name
+                    attributes["class"] = "object-image"
+                    attributes["style"] = "width: 60px; height: 60px; object-fit: contain;"
+                }
+            }
+            // Иначе показываем эмодзи
+            else if (obj.emoji != null) {
+                div {
+                    attributes["class"] = "object-emoji"
+                    +obj.emoji
+                }
             }
             div {
                 attributes["class"] = "object-name"
@@ -162,6 +173,12 @@ fun wordFindGame(): String {
                         @keyframes speakPulse {
                             0%, 100% { transform: scale(1); }
                             50% { transform: scale(1.2); background: #FFE082; }
+                        }
+                        .object-image {
+                            width: 60px;
+                            height: 60px;
+                            object-fit: contain;
+                            margin-bottom: 5px;
                         }
                         .object-emoji { font-size: 48px; margin-bottom: 8px; }
                         .object-name { 
