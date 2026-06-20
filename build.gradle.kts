@@ -1,7 +1,7 @@
 plugins {
-    kotlin("jvm") version "1.8.0"
+    kotlin("jvm") version "1.9.22"
     application
-    id("org.jetbrains.dokka") version "1.8.10"
+    id("org.jetbrains.dokka") version "1.9.10"
 }
 
 group = "com.logoped"
@@ -12,17 +12,36 @@ repositories {
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core:1.6.8")
-    implementation("io.ktor:ktor-server-netty:1.6.8")
-    implementation("io.ktor:ktor-html-builder:1.6.8")
-    implementation("ch.qos.logback:logback-classic:1.2.11")
-    testImplementation("io.ktor:ktor-server-test-host:1.6.8")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.8.0")
+    val ktorVersion = "2.3.12"
+    val exposedVersion = "0.44.1"
+
+    implementation("io.ktor:ktor-server-core-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-netty-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-html-builder-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-sessions-jvm:$ktorVersion")
+    implementation("io.ktor:ktor-server-default-headers-jvm:$ktorVersion")
+
+    implementation("org.jetbrains.exposed:exposed-core:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-dao:$exposedVersion")
+    implementation("org.jetbrains.exposed:exposed-jdbc:$exposedVersion")
+
+    implementation("org.xerial:sqlite-jdbc:3.44.1.0")
+    implementation("org.mindrot:jbcrypt:0.4")
+
+    implementation("ch.qos.logback:logback-classic:1.4.14")
+
+    testImplementation("io.ktor:ktor-server-test-host-jvm:$ktorVersion")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.22")
     testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
-kotlin {
-    jvmToolchain(8)
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+    kotlinOptions.jvmTarget = "21"
+}
+
+tasks.withType<JavaCompile> {
+    sourceCompatibility = "21"
+    targetCompatibility = "21"
 }
 
 tasks.dokkaHtml.configure {
@@ -41,16 +60,11 @@ tasks.test {
     useJUnitPlatform()
 }
 
-tasks.withType<JavaCompile> {
-    sourceCompatibility = "1.8"
-    targetCompatibility = "1.8"
-}
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
-}
-
 application {
     mainClass.set("MainKt")
+    applicationDefaultJvmArgs = listOf(
+        "--add-opens=java.base/java.nio=ALL-UNNAMED",
+        "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED",
+        "--add-opens=java.base/java.lang=ALL-UNNAMED"
+    )
 }
-

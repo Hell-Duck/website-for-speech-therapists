@@ -1,10 +1,28 @@
+/**
+ * Пакет, содержащий страницы веб-приложения.
+ *
+ * @author HellDuck
+ */
 package pages
 
 import data.GameData
+import models.RoomObject
+import models.UserSession
 import kotlinx.html.*
 import kotlinx.html.stream.*
-import models.RoomObject
 
+/**
+ * Рендерит HTML-представление игрового объекта (предмета) в комнате.
+ *
+ * Создаёт контейнер с абсолютным позиционированием, содержащий:
+ * - кликабельную кнопку с изображением/эмодзи и названием предмета
+ * - отдельную кнопку для воспроизведения звука названия
+ *
+ * @param obj Игровой объект (предмет) для отображения
+ * @param hasSound Флаг, указывающий, содержит ли название предмета звук "Р"
+ *
+ * @see RoomObject
+ */
 fun FlowContent.renderGameObject(obj: RoomObject, hasSound: Boolean) {
     val escapedName = obj.name.replace("'", "\\'")
 
@@ -48,12 +66,24 @@ fun FlowContent.renderGameObject(obj: RoomObject, hasSound: Boolean) {
     }
 }
 
-fun wordFindGame(): String {
+/**
+ * Генерирует HTML-страницу игры "Найди слово".
+ *
+ * Страница содержит:
+ * - игровое поле (комнату) с расставленными предметами
+ * - счётчик найденных предметов со звуком "Р"
+ * - сообщение с инструкцией
+ * - кнопку возврата к упражнениям
+ *
+ * @return Строка с полным HTML-кодом страницы
+ */
+fun wordFindGame(session: UserSession): String {
     return createHTML().html {
         head {
             title { +"Игра 'Найди слово' - Звук Р" }
             style {
                 unsafe {
+                    +commonStyles()
                     +"""
                         body {
                             font-family: 'Arial', sans-serif;
@@ -354,13 +384,21 @@ fun wordFindGame(): String {
             }
         }
         body {
+            navbar(session)
             div {
                 attributes["class"] = "game-wrapper"
                 div {
                     attributes["class"] = "game-container"
                     div {
                         attributes["class"] = "game-header"
-                        h1 { +"🎮 Игра 'Найди слово'" }
+                        div {
+                            attributes["style"] = "display:flex; align-items:center; gap:12px;"
+                            a("/sound/P") {
+                                attributes["class"] = "btn btn-secondary btn-sm"
+                                +"← Назад"
+                            }
+                            h1 { attributes["style"] = "margin:0;"; +"🎮 Игра 'Найди слово'" }
+                        }
                         div {
                             attributes["class"] = "score"
                             +"Найдено: "
@@ -419,7 +457,7 @@ fun wordFindGame(): String {
                         a {
                             attributes["class"] = "back-btn"
                             href = "/sound/P"
-                            +"← Вернуться к упражнениям"
+                            +"← К упражнениям"
                         }
                     }
                 }
