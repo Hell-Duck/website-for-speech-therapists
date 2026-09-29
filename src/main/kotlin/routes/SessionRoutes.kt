@@ -10,6 +10,7 @@ import io.ktor.server.response.*
 import io.ktor.server.routing.*
 import io.ktor.server.sessions.*
 import models.UserSession
+import models.StudentStatus
 import pages.*
 
 fun Route.registerSessionRoutes() {
@@ -39,8 +40,7 @@ fun Route.registerSessionRoutes() {
         if (session.role !in logopedAdmin) { call.respondRedirect("/dashboard"); return@get }
 
         val preselected = call.request.queryParameters["studentId"]?.toIntOrNull()
-        val studentViews = if (session.role == "ADMIN") StudentCardDAO.findAllViews()
-                           else StudentCardDAO.findViewsByLogoped(session.userId)
+        val studentViews = assignableStudents(session)
         call.respondText(sessionFormPage(session, studentViews, preselectedStudentId = preselected), ContentType.Text.Html)
     }
 
@@ -55,11 +55,11 @@ fun Route.registerSessionRoutes() {
         val comments       = params["comments"]?.trim()?.takeIf { it.isNotBlank() }
         val progressRating = params["progressRating"]?.toIntOrNull() ?: 3
 
-        val studentViews = if (session.role == "ADMIN") StudentCardDAO.findAllViews()
-                           else StudentCardDAO.findViewsByLogoped(session.userId)
+        val studentViews = assignableStudents(session)
 
         val error = when {
             studentUserId == null  -> "Выберите ученика."
+            !canAssignStudent(session, studentUserId) -> "У вас нет активной карточки этого ученика."
             sessionDate.isBlank()  -> "Укажите дату занятия."
             else                   -> null
         }
@@ -140,8 +140,7 @@ fun Route.registerSessionRoutes() {
         if (session.role !in logopedAdmin) { call.respondRedirect("/dashboard"); return@get }
 
         val preselected = call.request.queryParameters["studentId"]?.toIntOrNull()
-        val studentViews = if (session.role == "ADMIN") StudentCardDAO.findAllViews()
-                           else StudentCardDAO.findViewsByLogoped(session.userId)
+        val studentViews = assignableStudents(session)
         call.respondText(homeworkFormPage(session, studentViews, preselected), ContentType.Text.Html)
     }
 
@@ -155,11 +154,11 @@ fun Route.registerSessionRoutes() {
         val exerciseKeys  = params.getAll("exercises") ?: emptyList()
         val parentComment = params["parentComment"]?.trim()?.takeIf { it.isNotBlank() }
 
-        val studentViews = if (session.role == "ADMIN") StudentCardDAO.findAllViews()
-                           else StudentCardDAO.findViewsByLogoped(session.userId)
+        val studentViews = assignableStudents(session)
 
         val error = when {
             studentUserId == null        -> "Выберите ученика."
+            !canAssignStudent(session, studentUserId) -> "У вас нет активной карточки этого ученика."
             dueDate.isBlank()            -> "Укажите срок выполнения."
             exerciseKeys.none { it.isNotBlank() } -> "Выберите хотя бы одно упражнение."
             else                         -> null
@@ -210,3 +209,12 @@ fun Route.registerSessionRoutes() {
         call.respondRedirect("/student/homework")
     }
 }
+
+private fun canAssignStudent(session: UserSession, studentUserId: Int): Boolean =
+    if (session.role == "ADMIN") StudentCardDAO.existsActiveForStudent(studentUserId)
+    else StudentCardDAO.hasActiveCardForLogoped(studentUserId, session.userId)
+
+private fun assignableStudents(session: UserSession) =
+    (if (session.role == "ADMIN") StudentCardDAO.findAllViews()
+     else StudentCardDAO.findViewsByLogoped(session.userId))
+        .filter { it.card.status == StudentStatus.ACTIVE }
