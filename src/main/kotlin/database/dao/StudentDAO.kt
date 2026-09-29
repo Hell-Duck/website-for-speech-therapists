@@ -50,6 +50,14 @@ object StudentCardDAO {
         }.count() > 0L
     }
 
+    fun hasActiveCardForLogoped(studentUserId: Int, logopedId: Int): Boolean = transaction {
+        StudentCards.select {
+            (StudentCards.studentUserId eq studentUserId) and
+            (StudentCards.logopedId eq logopedId) and
+            (StudentCards.status eq StudentStatus.ACTIVE.name)
+        }.count() > 0L
+    }
+
     /** Все завершённые карточки всех логопедов — общий пул */
     fun findCompletedPoolViews(): List<StudentCardView> = transaction {
         StudentCards
